@@ -1,0 +1,30 @@
+Task 1
+--->assign 65,535 ip to vpc
+--->create 4 vpc 8 gib memory
+vloume 18
+launch instance
+
+Task2
+resize volume 28 bg
+snap create
+AMI
+launch ec2 8vcpu 16 gb memory
+elastic  ip
+
+Task3
+17000 ips to vpc
+launch ec2 with 4vcpu 16 gb memory vloume 9gb
+connect to terminal create a file  name (gana) in side file with total content
+  a. content- create of vpc
+  b. content- creation of ec2 instance ... (save it)
+create a directory move gana file created directory
+ 
+Task4
+22000 ips
+t2 memium
+AMI ubuntu
+directory / files lo files
+java install 
+vloume resize 32 gb
+
+

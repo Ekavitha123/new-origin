@@ -1,0 +1,32 @@
+Task5
+3300 CIDR
+create 3public subnets, 1 private subnets
+route table 1 public 1 private
+launch ec2 instance with 28 gb volume/ t3 medium
+snap short volume 28 gb
+convert to AMI
+launch instance t2 micro
+30 gb volume
+attached elastic ip
+
+TASK6
+create vpc with 18 netmask id
+launch ec2 with 60gb disk/ t3 medium
+create target group/ create load balancer
+connet to terminal create 100 files & directorys
+check healthuages
+
+TASK 7
+create vpc 20CIDR
+using that vpc EFS & NFS
+transfering files
+
+TASK 8
+create vpc 20 netmask id
+security group ssh / http {inbound rules}
+launch instace ubuntu, t3 medium
+create vloume 25 mounte volume
+install github
+create 125 files push the files github
+
+

@@ -1,0 +1,22 @@
+TASK 12
+create vpc componets with 2000ips
+launch ec2 instance with 28 gb /4vcpu/8gb memory
+connet to terminal
+install git
+create files and push files to github (100)
+
+TASK 13
+launch ec2 with vpc CIDR 18
+create volume 128 gb attach to ec2 instace
+launch template ang ASG with load balancer attach 
+move the files in github
+
+TASK 14
+launch ec2 instance with 50000 ips 
+volume 29gb /t3 medium
+create volume and resize volume to 40 gb
+create snap short of default volume
+create image from snap short
+launch ec2 instance with image increage volume 40 gb
+create git brances qa, test, developer 
+git push all 100 files every branch

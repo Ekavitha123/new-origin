@@ -1,0 +1,26 @@
+ TASK 9
+create vpc with 60000 ips 8 subnets
+route table 2
+security group ssh/http {inbound rules}
+os ubuntu , t3 medium volume 30 launch instance
+install java
+create  200 diretorys name {meeshow}
+give write permission for all directorys.
+
+TASK 10
+create snap short of previous vlome dev/xvds
+snap to AMI
+AMI TO ec2 launch with ubuntu /t3 medium
+create & attach load balancer to ec2 innstance
+create elastic ip and attach to ec2 instance
+
+TASK11
+create vpc 16000 ips
+ec2 instance 28gb /4gb memory
+create volume attach to ec2 instance
+create load balancer / target group
+install nginx/https.//github.com/mani137/food.git
+check the server health
+attach elastic ip to instance
+change the instace type to (c6. xlarge)
+ 
