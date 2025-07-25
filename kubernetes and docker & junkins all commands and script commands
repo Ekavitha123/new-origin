@@ -1,0 +1,184 @@
+sudo yum install java-17-amazon-corretto-headless
+    4  sudo wget -O /etc/yum.repos.d/jenkins.repo     https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    5  sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    6  sudo yum upgrade
+    7  sudo yum install jenkins
+    8  sudo systemctl daemon-reload
+    9  sudo systemctl enable jenkins
+   10  sudo systemctl start jenkins
+   11  sudo systemctl status jenkins
+   12  sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+   13  sudo yum -y install git
+   14  sudo yum install python3-pip -y
+   15  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+   16  unzip awscliv2.zip
+   17  ls
+   18  sudo ./aws/install
+   19   curl -Lo kops https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+   20  sudo chmod 777 kops
+   21   sudo mv kops /usr/local/bin/kops
+   22  aws s3api create-bucket   --bucket appale12   --region ap-south-1   --create-bucket-configuration LocationConstraint=ap-south-1
+   23  aws configure
+   24  aws s3api create-bucket   --bucket appale12   --region ap-south-1   --create-bucket-configuration LocationConstraint=ap-south-1
+   25  kops create cluster   --name=manik8scluster.k8s.local   --state=s3://kavitha132   --zones=ap-south-1a   --node-count=1   --node-size=t2.medium   --master-size=t2.medium   --master-volume-size=20   --node-volume-size=20
+   26  kops create cluster   --name=manik8scluster.k8s.local   --state=s3://appale12   --zones=ap-south-1a   --node-count=1   --node-size=t2.medium   --master-size=t2.medium   --master-volume-size=20   --node-volume-size=20
+   27   kops update cluster --name manik8scluster.k8s.local --yes --admin
+   28  export KOPS_STATE_STORE=s3://appale12
+   29   kops update cluster --name manik8scluster.k8s.local --yes --admin
+   30   kops get cluster
+   31  kops get instances
+   32  curl -O https://s3.us-west-2.amazonaws.com/amazon-eks/1.33.0/2025-05-01/bin/linux/amd64/kubectl
+   33  ls
+   34  chmod +x ./kubectl
+   35   mkdir -p $HOME/bin && cp ./kubectl $HOME/bin/kubectl && export PATH=$HOME/bin:$PATH
+   36  echo 'export PATH=$HOME/bin:$PATH' >> ~/.bashrc
+   37  curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-latest.x86_64.rpm
+   38  sudo rpm -Uvh minikube-latest.x86_64.rpm
+   39  sudo yum -y install docker
+   40  sudo systemctl start docker
+   41  sudo systemctl enable docker
+   42  sudo chmod 666 /var/run/docker.sock
+   43  minikube start
+   44  sudo yum -y install git
+   45   git clone https://github.com/Ekavitha123/E-commerce.git
+   46  docker login
+   47  sudo vi dockerfile
+   48  cd E-commerce/
+   49  sudo yum -y install maven
+   50  mvn clean install
+   51  ls
+   52  cd target/
+   53  ls
+   54  cd
+   55  sudo vi dockerfile
+   56  docker build -t project .
+   57  sudo vi dockerfile
+   58  docker build -t project .
+   59  cd E-commerce/
+   60  cd target/
+   61  sudo vi dockerfile
+   62  docker build -t project .
+   63  docker login
+   64  docker tag project kavitha142/project:latest
+   65  docker push kavitha142/project:latest
+   66  cd
+   67  ls
+   68  kops get luster
+   69  kops get cluster
+   70  history
+   71  kops get all
+   72  ls
+   73  cd kubectl/
+   74  /home/ec2-user/.kube/config
+   75  kubectl --kubeconfig=/home/ec2-user/.kube/config get nodes
+   76  export KUBECONFIG=/home/ec2-user/.kube/config
+   77  kubectl get pods
+   78  cat ~/.kube/config
+   79  sudo chown ec2-user:ec2-user /home/ec2-user/.kube/config
+   80  chmod 600 /home/ec2-user/.kube/config
+   81  sudo yum -y install git
+   82  ls
+   83  sudo mv kubectl /usr/local/bin/
+   84  cd .kube
+   85  ll
+   86  sodo cat config
+   87  sudo cat config
+   88  cd
+   89  cd /home/
+   90  ll
+   91  sudo chmod 777 ec2-user/
+   92  ll
+   93  cd
+   94  cd /home/ec2-user/.minikube/profiles/minikube
+   95  ll
+   96  sudo chmod 777 *
+   97  cd ../
+   98  ll
+   99  sudo chmod 777 minikube/
+  100  cd ../
+  101  ll
+  102  sudo chmod 777 *
+  103  cd ../
+  104  ls -a
+  105  sudo chmod 777 .minikube/
+  106  kubectl get pods
+  107  kubectl port-forward --address 0.0.0.0 pod/project-deployment-5dc97c9d9c-lqjg7 8082/8000
+  108  kubectl port-forward --address 0.0.0.0 pod/project-deployment-5dc97c9d9c-lqjg7 8082/8080
+  109  kubectl port-forward --address 0.0.0.0 pod/project-deployment-5dc97c9d9c-lqjg7 8082:8080
+  110  cd .kube/
+  111  ll
+  112  sudo cat config
+  113  cd
+  114  history
+
+kubernetes &docke&sonar pipeline script
+
+pipeline {
+    tools {
+        maven 'maven'
+    }
+
+    environment {
+        imagename = "kavitha142/project"
+        registryCredential = 'docker'
+        KUBECONFIG_SECRET_ID = 'kubernetes'
+    }
+
+    agent any
+
+    stages {
+        stage('Clone Repository') {
+            steps {
+                git branch: 'main', changelog: false, credentialsId: 'docker', poll: false, url: 'https://github.com/Ekavitha123/E-commerce.git'
+            }
+        }
+
+        stage('Build with Maven') {
+            steps {
+                sh 'mvn clean package -DskipTests'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                  dockerImage = docker.build(imagename)
+                }
+            }
+        }
+
+        stage('Push Image to Docker Hub') {
+            steps {
+                script {
+                    docker.withRegistry('', registryCredential) {
+                        dockerImage.push("${BUILD_NUMBER}")
+                        dockerImage.push("latest")
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
+            steps {
+                withCredentials([file(credentialsId: "${KUBECONFIG_SECRET_ID}", variable: 'KUBECONFIG')]) {
+                    script {
+                        def imageTag = "${imagename}:${BUILD_NUMBER}"
+                    sh """
+                         sed -i 's,TEST_IMAGE_NAME,${imageTag},' deployment.yaml
+                         kubectl --kubeconfig=\$KUBECONFIG get nodes
+                         kubectl apply -f service.yaml --validate=false
+                         kubectl apply -f deployment.yaml
+                     """
+                    }
+                }
+            }
+        }
+
+        stage('Clean Up Docker Images') {
+            steps {
+                sh "docker rmi ${imagename}:${BUILD_NUMBER} || true"
+                sh "docker rmi ${imagename}:latest || true"
+            }
+        }
+    }
+}
