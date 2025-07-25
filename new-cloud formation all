@@ -1,0 +1,290 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Create a VPC with public and private subnets, EC2, Internet Gateway, ALB, and Elastic IP
+
+Parameters:
+  DBUsername:
+    Type: String
+    Description: RDS master username
+  DBPassword:
+    Type: String
+    NoEcho: true
+    Description: RDS master password
+
+Resources:
+
+  task20:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/18
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: task20VPC
+
+  task20InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: task20InternetGateway
+
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref task20
+      InternetGatewayId: !Ref task20InternetGateway
+
+  task20PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref task20
+      CidrBlock: 10.0.0.0/20
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: ap-south-1a
+      Tags:
+        - Key: Name
+          Value: task20-Public-Subnet1
+
+  task20PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref task20
+      CidrBlock: 10.0.16.0/20
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: ap-south-1b
+      Tags:
+        - Key: Name
+          Value: task20-Public-Subnet2
+
+  task20PublicSubnet3:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref task20
+      CidrBlock: 10.0.32.0/20
+      MapPublicIpOnLaunch: true
+      AvailabilityZone: ap-south-1c
+      Tags:
+        - Key: Name
+          Value: task20-Public-Subnet3
+
+  task20PrivateSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref task20
+      CidrBlock: 10.0.48.0/20
+      MapPublicIpOnLaunch: false
+      AvailabilityZone: ap-south-1c
+      Tags:
+        - Key: Name
+          Value: task20-Private-Subnet
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref task20
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref task20
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachInternetGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref task20InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref task20PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref task20PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet3RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref task20PublicSubnet3
+      RouteTableId: !Ref PublicRouteTable
+
+  PrivateSubnetRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref task20PrivateSubnet
+      RouteTableId: !Ref PrivateRouteTable
+
+  PublicSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow SSH and HTTP from anywhere
+      VpcId: !Ref task20
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: task20-PublicSG
+
+  task20EC2Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t2.micro
+      ImageId: ami-002f6e91abff6eb96
+      SubnetId: !Ref task20PublicSubnet1
+      SecurityGroupIds:
+        - !Ref PublicSecurityGroup
+      KeyName: kavi
+      Tags:
+        - Key: Name
+          Value: task20-EC2
+
+  task20ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+
+  EIPAssociation:
+    Type: AWS::EC2::EIPAssociation
+    Properties:
+      InstanceId: !Ref task20EC2Instance
+      EIP: !Ref task20ElasticIP
+
+  ALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: task20-TargetGroup
+      VpcId: !Ref task20
+      Protocol: HTTP
+      Port: 80
+      TargetType: instance
+      HealthCheckProtocol: HTTP
+      HealthCheckPort: traffic-port
+      HealthCheckPath: /
+      Matcher:
+        HttpCode: 200
+      Tags:
+        - Key: Name
+          Value: task20-TG
+
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Name: task20-ALB
+      Subnets:
+        - !Ref task20PublicSubnet1
+        - !Ref task20PublicSubnet2
+        - !Ref task20PublicSubnet3
+      SecurityGroups:
+        - !Ref PublicSecurityGroup
+      Scheme: internet-facing
+      Type: application
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: '60'
+      Tags:
+        - Key: Name
+          Value: task20-ALB
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref ALBTargetGroup
+
+  Task20LaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: Task20-launch-template
+      LaunchTemplateData:
+        ImageId: ami-002f6e91abff6eb96
+        InstanceType: t3.micro
+
+  Task20AutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+        - !Ref task20PublicSubnet1
+        - !Ref task20PublicSubnet2
+        - !Ref task20PublicSubnet3
+      LaunchTemplate:
+        LaunchTemplateId: !Ref Task20LaunchTemplate
+        Version: !GetAtt Task20LaunchTemplate.LatestVersionNumber
+      MinSize: '1'
+      MaxSize: '1'
+      DesiredCapacity: '1'
+      TargetGroupARNs:
+        - !Ref ALBTargetGroup
+      Tags:
+        - Key: Name
+          Value: Task20ASGInstance
+          PropagateAtLaunch: true
+
+  Task20DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Access to Meeshow RDS
+      VpcId: !Ref task20
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0
+
+  Task20DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties:
+      DBSubnetGroupDescription: Subnet group for Meeshow RDS
+      SubnetIds:
+        - !Ref task20PrivateSubnet
+        - !Ref task20PublicSubnet1  # fallback for multi-az RDS if needed
+
+  Task20RDSInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: Task20
+      AllocatedStorage: 20
+      DBInstanceClass: db.t3.micro
+      Engine: mysql
+      EngineVersion: 8.0
+      MasterUsername: !Ref DBUsername
+      MasterUserPassword: !Ref DBPassword
+      VPCSecurityGroups:
+        - !GetAtt Task20DBSecurityGroup.GroupId
+      DBSubnetGroupName: !Ref Task20DBSubnetGroup
+      PubliclyAccessible: true
+      DeletionProtection: false
+      BackupRetentionPeriod: 1
+      Tags:
+        - Key: Name
+          Value: Task20DB
+
+Outputs:
+  ElasticIP:
+    Description: Elastic IP Address
+    Value: !Ref task20ElasticIP
+
+  LoadBalancerDNS:
+    Description: Public DNS name of ALB
+    Value: !GetAtt LoadBalancer.DNSName
+
+  RDSInstanceEndpoint:
+    Description: RDS Endpoint
+    Value: !GetAtt Task20RDSInstance.Endpoint.Address
