@@ -1,0 +1,52 @@
+sudo yum -y install git
+    2  git --version
+    3  git clone https://github.com/Ekavitha123/repository1.git
+    4  ls
+    5  wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.104/bin/apache-tomcat-9.0.104.tar.gz
+    6  tar -xvf apache-tomcat-9.0.104.tar.gz
+    7  ls
+    8  cd apache-tomcat-9.0.104/
+    9  ls
+   10  sudo find / -name context.xml
+   11  sudo vi /home/ec2-user/apache-tomcat-9.0.104/webapps/docs/META-INF/context.xml
+   12  sudo vi /home/ec2-user/apache-tomcat-9.0.104/webapps/examples/META-INF/context.xml
+   13  sudo vi /home/ec2-user/apache-tomcat-9.0.104/webapps/host-manager/META-INF/context.xml
+   14  sudo vi /home/ec2-user/apache-tomcat-9.0.104/webapps/manager/META-INF/context.xml
+   15  cd conf/
+   16  ls
+   17  sudo vi tomcat-users.xml
+   18  ls
+   19  cd..
+   20  cd ..
+   21  cd bin/
+   22  sudo yum install java-17-amazon-corretto-headless
+   23  java --version
+   24  ./startup.sh
+   25  cd
+   26  ls
+   27  cd apache-tomcat-9.0.104/
+   28  cd
+   29  cd repository1/
+   30  ls
+   31  cd DevOps-Project-01
+   32  ls
+   33  cd Java-Login-App
+   34  sudo yum -y install maven
+   35  ls
+   36  mvn clean install
+   37  ls
+   38  cd target/
+   39  ls
+   40  cp -R  dptweb-1.0.war /home/ec2-user/apache-tomcat-9.0.104/webapps/
+   41  ls
+   42  cd apache-tomcat-9.0.104/
+   43  cd
+   44  cd apache-tomcat-9.0.104/
+   45  ls
+   46  cd webapps/
+   47  ls
+   48  cd ..
+   49  cd bin/
+   50  ./shutdown.sh
+   51  ./startup.sh
+   52  history
