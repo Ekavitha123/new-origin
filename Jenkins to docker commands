@@ -1,0 +1,53 @@
+1  sudo yum install java-17-amazon-corretto-headless -y
+    2  sudo wget -O /etc/yum.repos.d/jenkins.repo     https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    3  sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    4  sudo yum upgrade
+    5  sudo yum install jenkins
+    6  sudo systemctl daemon-reload
+    7  sudo systemctl enable jenkins
+    8  sudo systemctl start jenkins
+    9  sudo systemctl status jenkins
+   10  sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+   11  sudo yum -y install git
+
+docker commads
+ 1  sudo yum -y install docker
+    2  sudo systemctl start docker
+    3  sudo systemctl enable docker
+    4  sudo vi dockerfile
+    5  docker build -t online .
+    6  sudo chmod 666 /var/run/docker.sock
+    7  docker build -t online .
+    8  docker images
+    9  docker run -dt --name online -p 8080:8080 online
+   10  sudo -i
+root user commands
+1  cd /opt
+    2  ls
+    5  useradd main
+    6  passwd main
+    7  visudo
+    8  sudo vi /etc/ssh/sshd_config
+   10  sudo systemctl reload sshd
+   11  ls
+   12  mkdir meesh
+   13  ls
+   14  ll
+   15  cd meesh
+   16  ls
+   17  pwd
+   18  ls
+   19  ll
+   20  cd ..
+   21  ll
+   22  sudo chmod 777 meesh
+   24  sudo chown main:main meesh/
+   25  ll
+   26  cd meesh
+   34  ls
+   40  cd target/
+   41  ls
+   42  sudo vi dockerfile
+   43  docker build -t page .
+   44  docker run -dt --name page -p 8081:8080 page
+ 
