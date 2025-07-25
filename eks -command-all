@@ -1,0 +1,201 @@
+junkis-nexus-sonar-docker-eks-prometheus-grafana commands and script 4 ec2 serves
+
+Jenkins  and docker commands 0ne server ec2 -----1
+
+1  sudo yum install java-17-amazon-corretto-headless -y
+    2  sudo wget -O /etc/yum.repos.d/jenkins.repo     https://pkg.jenkins.io/redhat-stable/jenkins.repo
+    3  sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+    4  sudo yum upgrade
+    5  sudo yum install jenkins
+    6  sudo systemctl daemon-reload
+    7  sudo systemctl enable jenkins
+    8  sudo systemctl start jenkins
+    9  sudo systemctl status jenkins
+   10  sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+   13  sudo yum -y install git
+   14  sudo yum -y install docker
+   15  sudo systemctl start docker
+   16  sudo systemctl enable docker
+   17  sudo chmod 777 /var/run/docker.sock
+kubctl install
+   18  curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+   19  chmod +x ./kubectl
+   20  sudo mv ./kubectl /usr/local/bin
+   21  kubectl version --short --client
+   22  history
+
+nenux commands second server ec2------2
+
+
+1  sudo yum install java-17-amazon-corretto-headless -y
+    sudo -i
+    sudo yum update -y
+    2  java --version
+    3  cd  /opt/
+    4  ls
+    5  sudo mkdir /app && cd /app
+    6  wget https://download.sonatype.com/nexus/3/nexus-3.80.0-06-linux-x86_64.tar.gz
+    7  ls
+    8  tar -xvf nexus-3.80.0-06-linux-x86_64.tar.gz
+    9  ls
+   10  ll
+   11  sudo mv nexus-3* nexus
+   12  sudo mv nexus-3.80.0-06 nexus
+   13  ls
+   14  sudo adduser nexus
+       sudo chown -R nexus:nexus /app/nexus
+       sudo chown -R nexus:nexus /app/sonatype-work
+
+   15  sudo vi  /app/nexus/bin/nexus.rc
+   16  sudo vi /etc/systemd/system/nexus.service
+   19  ll
+   20  sudo chkconfig nexus on
+   21  sudo systemctl start nexus
+   22  sudo systemctl status nexus
+
+sonar commands third server ec2------3
+
+ 1  sudo yum install java-17-amazon-corretto-headless -y
+    2  wget https://binaries.sonarsource.com/Distribution/sonarqube/sonarqube-9.1.0.47736.zip
+    3  ls
+    4  unzip sonarqube-9.1.0.47736.zip
+    5  ls
+    6  cd sonarqube-9.1.0.47736/
+    7  ls
+    8  cd bin/
+    9  ls
+   10  cd linux-x86-64/
+   11  ls
+   12  ./sonar.sh start
+   13  ./sonar.sh status
+   14  history
+
+eks and Prometheus and Grafana commands fourth server ec2------4
+
+1  ls
+    2  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    3  unzip awscliv2.zip
+    4  sudo ./aws/install
+    5  aws configure
+    6  curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+    7  chmod +x ./kubectl
+    8  sudo mv ./kubectl /usr/local/bin
+    9  kubectl version --short --client
+   10  curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+   11  sudo mv /tmp/eksctl /usr/local/bin
+   12  eksctl version
+   13  eksctl create cluster --name=my-eks22                       --region=ap-south-1                       --zones=ap-south-1a,ap-south-1b                       --version=1.32                       --without-nodegroup
+   14  eksctl utils associate-iam-oidc-provider     --region ap-south-1     --cluster my-eks22     --approve
+   15  eksctl create nodegroup --cluster=my-eks22                        --region=ap-south-1                        --name=node2                        --node-type=t3.medium                        --nodes=3                        --nodes-min=2                        --nodes-max=4                        --node-volume-size=20                        --ssh-access                        --ssh-public-key=hansible                        --managed                        --asg-access                        --external-dns-access                        --full-ecr-access                        --appmesh-access                        --alb-ingress-access
+   16  ls
+   17  sudo vi svc.yaml
+   18  kubectl create ns webapps
+   19  kubectl apply -f svc.yaml
+   20  sudo vi role.yaml
+   21  kubectl apply -f role.yaml
+   22  sudo vi bind.yaml
+   23  kubectl apply -f bind.yaml
+   24  sudo vi token.yaml
+   25  kubectl apply -f token.yaml -n webapps
+   26  kubectl describe secret mysecretname -n webapps
+   27  ls -a
+   28  cd .kube/
+   29  ls
+   30  cat config
+   31  cd
+Prometheus install
+
+   32  wget https://github.com/prometheus/prometheus/releases/download/v3.4.1/prometheus-3.4.1.linux-amd64.tar.gz
+   33  ls
+   34  tar -xvf prometheus-3.4.1.linux-amd64.tar.gz
+   35  ls
+   36  cd prometheus-3.4.1.linux-amd64/
+   37  ls
+   38  ./prometheus &
+Grafana install 
+   39  sudo yum install -y https://dl.grafana.com/enterprise/release/grafana-enterprise-12.0.1+security~01-1.x86_64.rpm
+   40   sudo /bin/systemctl start grafana-server.service
+   41  history
+
+ 
+junkis-nenus-sonar-docker-eks-prometheus-grafana  and script
+
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven' // This should match the Maven tool name in Jenkins
+    }
+
+    environment {
+        IMAGE_NAME = 'kavitha142/project'
+        CREDENTIALS_ID = 'docker'
+        SONARQUBE_SERVER = 'sonar'
+        SONAR_PROJECT_KEY = 'sonar'
+        SONAR_PROJECT_NAME = 'sonar'
+        SONAR_HOST_URL = 'http://52.66.229.216:9000/'
+        SONAR_LOGIN = 'dbd13ee6549380909a19a738cb05038d4ed0d2cc'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', 
+                    changelog: false, 
+                    poll: false, 
+                    url: 'https://github.com/Ekavitha123/E-comerce12.git'
+            }
+        }
+
+        stage('Maven Deploy with Nexus') {
+            steps {
+                withMaven(
+                    globalMavenSettingsConfig: 'maven-settings', // This ID should exist under Managed Files in Jenkins
+                    maven: 'maven',
+                    traceability: true
+                ) {
+                    sh 'mvn clean deploy'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.login=${SONAR_LOGIN}
+                    """
+                }
+            }
+        }
+
+        stage('Docker Image Build') {
+            steps {
+                withDockerRegistry(credentialsId: "${CREDENTIALS_ID}", toolName: 'docker') {
+                    sh "docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                withKubeCredentials(kubectlCredentials: [[
+                    caCertificate: '',
+                    clusterName: 'my-eks22.ap-south-1.eksctl.io',
+                    contextName: '',
+                    credentialsId: 'kB-cred',
+                    namespace: 'webapps',
+                    serverUrl: 'https://DB3AAD0CA3DFFDD7C6B337956E193CA1.yl4.ap-south-1.eks.amazonaws.com'
+                ]]) {
+                    sh 'kubectl apply -f deployment.yaml'
+                    sh 'kubectl apply -f service.yaml'
+                }
+            }
+        }
+    }
+}
+
