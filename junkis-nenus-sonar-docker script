@@ -1,0 +1,67 @@
+junkis-nenus-sonar-docker script
+
+pipeline {
+    agent any
+
+    tools {
+        maven 'maven' // This should match the Maven tool name in Jenkins
+    }
+
+    environment {
+        IMAGE_NAME = 'kavitha142/project'
+        CREDENTIALS_ID = 'docker'
+        SONARQUBE_SERVER = 'sonar'
+        SONAR_PROJECT_KEY = 'sonar'
+        SONAR_PROJECT_NAME = 'sonar'
+        SONAR_HOST_URL = 'http://52.66.229.216:9000/'
+        SONAR_LOGIN = 'dbd13ee6549380909a19a738cb05038d4ed0d2cc'
+    }
+
+    stages {
+        stage('Git Checkout') {
+            steps {
+                git branch: 'main', 
+                    changelog: false, 
+                    poll: false, 
+                    url: 'https://github.com/Ekavitha123/E-comerce12.git'
+            }
+        }
+
+        stage('Maven Deploy with Nexus') {
+            steps {
+                withMaven(
+                    globalMavenSettingsConfig: 'maven-settings', // This ID should exist under Managed Files in Jenkins
+                    maven: 'maven',
+                    traceability: true
+                ) {
+                    sh 'mvn clean deploy'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv("${SONARQUBE_SERVER}") {
+                    sh """
+                        mvn sonar:sonar \
+                        -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                        -Dsonar.projectName=${SONAR_PROJECT_NAME} \
+                        -Dsonar.host.url=${SONAR_HOST_URL} \
+                        -Dsonar.login=${SONAR_LOGIN}
+                    """
+                }
+            }
+        }
+
+        stage('Docker Image Build') {
+            steps {
+                withDockerRegistry(credentialsId: "${CREDENTIALS_ID}", toolName: 'docker') {
+                    sh "docker build -t ${IMAGE_NAME} ."
+                }
+            }
+        }
+    }
+}
+
+
+
