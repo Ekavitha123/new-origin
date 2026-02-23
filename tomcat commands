@@ -2,8 +2,8 @@ sudo yum -y install git
     2  git --version
     3  git clone https://github.com/Ekavitha123/repository1.git
     4  ls
-    5  wget https://dlcdn.apache.org/tomcat/tomcat-9/v9.0.104/bin/apache-tomcat-9.0.104.tar.gz
-    6  tar -xvf apache-tomcat-9.0.104.tar.gz
+    5  wget https://downloads.apache.org/tomcat/tomcat-9/v9.0.115/bin/apache-tomcat-9.0.115.tar.gz
+    6  tar -xvzf apache-tomcat-9.0.115.tar.gz
     7  ls
     8  cd apache-tomcat-9.0.104/
     9  ls
