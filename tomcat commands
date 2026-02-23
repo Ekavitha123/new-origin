@@ -37,7 +37,7 @@ sudo yum -y install git
    37  ls
    38  cd target/
    39  ls
-   40  cp -R  dptweb-1.0.war /home/ec2-user/apache-tomcat-9.0.104/webapps/
+   40  cp   dptweb-1.0.war /home/ec2-user/ec2-user/apache-tomcat-9.0.115.tar.gz/webapps/
    41  ls
    42  cd apache-tomcat-9.0.104/
    43  cd
